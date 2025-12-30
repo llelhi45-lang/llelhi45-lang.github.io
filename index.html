@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Editor Ku</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #canvas {
+      max-width: 90%;
+      border: 5px solid white;
+      border-radius: 15px;
+      margin: 20px auto;
+      display: block;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .controls {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 15px;
+      margin: 20px auto;
+      max-width: 90%;
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: bold;
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      background: #fff;
+    }
+    .buttons {
+      margin: 20px 0;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 8px;
+      border: none;
+      border-radius: 50px;
+      background: #ff6b6b;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    #upload-btn {
+      background: #4facfe;
+      padding: 15px 30px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Image Editor Keren</h1>
+  <p>Dibuat pakai HP Android!</p>
+
+  <input type="file" id="upload" accept="image/*" style="display:none;">
+  <button id="upload-btn" onclick="document.getElementById('upload').click()">
+    📸 Upload Foto
+  </button>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="controls" id="controls" style="display:none;">
+    <label>Brightness <span id="bright-val">100</span>%</label>
+    <input type="range" id="brightness" min="0" max="200" value="100">
+
+    <label>Contrast <span id="contrast-val">100</span>%</label>
+    <input type="range" id="contrast" min="0" max="200" value="100">
+
+    <label>Saturate <span id="saturate-val">100</span>%</label>
+    <input type="range" id="saturate" min="0" max="200" value="100">
+
+    <label>Grayscale <span id="gray-val">0</span>%</label>
+    <input type="range" id="grayscale" min="0" max="100" value="0">
+
+    <label>Blur <span id="blur-val">0</span>px</label>
+    <input type="range" id="blur" min="0" max="20" value="0">
+
+    <label>Sepia <span id="sepia-val">0</span>%</label>
+    <input type="range" id="sepia" min="0" max="100" value="0">
+
+    <div class="buttons">
+      <button onclick="rotateLeft()">↺ Rotate Kiri</button>
+      <button onclick="rotateRight()">↻ Rotate Kanan</button>
+      <button onclick="reset()">🔄 Reset</button>
+      <button onclick="download()">💾 Download</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const upload = document.getElementById('upload');
+    const controls = document.getElementById('controls');
+
+    let img = new Image();
+    let angle = 0;
+
+    // Upload foto
+    upload.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        img.src = URL.createObjectURL(e.target.files[0]);
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          controls.style.display = 'block';
+          applyFilters();
+        }
+      }
+    });
+
+    // Update nilai slider
+    document.querySelectorAll('input[type="range"]').forEach(input => {
+      input.addEventListener('input', () => {
+        document.getElementById(input.id + '-val').textContent = input.value;
+        applyFilters();
+      });
+    });
+
+    function applyFilters() {
+      let filter = `
+        brightness(${document.getElementById('brightness').value}%)
+        contrast(${document.getElementById('contrast').value}%)
+        saturate(${document.getElementById('saturate').value}%)
+        grayscale(${document.getElementById('grayscale').value}%)
+        blur(${document.getElementById('blur').value}px)
+        sepia(${document.getElementById('sepia').value}%)
+      `;
+
+      ctx.filter = filter;
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(angle * Math.PI / 180);
+      ctx.drawImage(img, -img.width / 2, -img.height / 2, img.width, img.height);
+      ctx.restore();
+    }
+
+    function rotateLeft() {
+      angle -= 90;
+      applyFilters();
+    }
+
+    function rotateRight() {
+      angle += 90;
+      applyFilters();
+    }
+
+    function reset() {
+      document.querySelectorAll('input[type="range"]').forEach(input => {
+        input.value = input.id === 'brightness' || input.id === 'contrast' || input.id === 'saturate' ? 100 : 0;
+        document.getElementById(input.id + '-val').textContent = input.value;
+      });
+      angle = 0;
+      applyFilters();
+    }
+
+    function download() {
+      let link = document.createElement('a');
+      link.download = 'edited-image.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+  </script>
+</body>
+</html>
