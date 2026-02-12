@@ -1,0 +1,18 @@
+// file: sub-converter.js
+function convertSRTtoVTT(srtText) {
+    // 1. Tambahkan header WEBVTT
+    let vtt = "WEBVTT\n\n";
+    // 2. Ubah koma (,) pada timestamp menjadi titik (.) sesuai standar VTT
+    vtt += srtText.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
+    return vtt;
+}
+
+function processConversion() {
+    const input = document.getElementById('srt-input').value;
+    const output = document.getElementById('vtt-output');
+    if (!input) return alert("Masukkan teks SRT terlebih dahulu!");
+    
+    output.value = convertSRTtoVTT(input);
+}
+
+
